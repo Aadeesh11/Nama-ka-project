@@ -272,6 +272,16 @@ app.get("/v1/community/me/owner", (req, res) => {
   });
 });
 
+app.get("/v1/auth/me", (req, res) => {
+  const user = req.decoded;
+  User.findOne({
+    where: { id: user.id },
+    attributes: { exclude: ["password"] },
+  }).then((user) => {
+    res.json(getsuccessStruct(user));
+  });
+});
+
 app.listen(port, async () => {
   try {
     await sequelize.authenticate();
