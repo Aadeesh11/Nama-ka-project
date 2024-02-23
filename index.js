@@ -272,6 +272,37 @@ app.get("/v1/community/me/owner", (req, res) => {
   });
 });
 
+app.get("/v1/community/me/member", (req, res) => {
+  let { page } = req.query;
+  if (page === undefined || page < 0) {
+    page = 0;
+  }
+  Community.findAndCountAll({
+    where: {},
+    include: [
+      {
+        model: Member,
+        required: true,
+        attributes: [],
+        where: { user: req.decoded.id },
+        as: "member",
+      },
+      { model: User, required: true, attributes: ["id", "name"], as: "owner" },
+    ],
+  }).then((members) => {
+    res.json(
+      getsuccessStruct({
+        meta: {
+          page: page + 1,
+          total: members.count,
+          pages: parseInt(members.count / 10) + 1,
+        },
+        data: members.rows,
+      })
+    );
+  });
+});
+
 app.get("/v1/auth/me", (req, res) => {
   const user = req.decoded;
   User.findOne({
